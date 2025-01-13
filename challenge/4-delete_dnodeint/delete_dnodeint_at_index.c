@@ -2,54 +2,58 @@
 #include <stdlib.h>
 
 /**
-* delete_dnodeint_at_index - Deletes the node at a specific index from
-* a doubly linked list.
-* @head: A double pointer to the first element of the list.
-* @index: The index of the node to delete (starting from 0).
-*
-* Return: 1 if the deletion was successful, -1 if it failed
-* (e.g., index out of range).
-*/
+ * delete_dnodeint_at_index - Delete a node at a specific index from a list
+ *
+ * @head: A pointer to the first element of a list
+ * @index: The index of the node to delete
+ *
+ * Return: 1 on success, -1 on failure
+ */
 int delete_dnodeint_at_index(dlistint_t **head, unsigned int index)
 {
-	dlistint_t *current;
+
+	dlistint_t *saved_head;
+	dlistint_t *tmp;
 	unsigned int p;
 
-	/* Check if the list is empty*/
-	if (head == NULL || *head == NULL)
-		return (-1);
-
-	current = *head;  /* Start at the beginning of the list */
-	p = 0;
-
-	/* Traverse the list to find the node at the given index */
-	while (current != NULL && p < index)
+	if (*head == NULL) /* If the list is empty, return failure */
 	{
-		current = current->next;  /* Move to the next node */
+		return (-1);
+	}
+	saved_head = *head;
+	p = 0;
+    /* Traverse the list to find the node at the specified index */
+	while (p < index && *head != NULL)
+	{
+		*head = (*head)->next;
 		p++;
 	}
-
-	/* If index is out of bounds*/
-	if (current == NULL || p != index)
+    /* If the index is out of range */
+	if (p != index)
+	{
+		*head = saved_head;
 		return (-1);
+	}
+    /* Deleting the node at the specific index */
+	if (p == 0) /* Special case for deleting the first node */
+	{
+		tmp = (*head)->next;
+		free(*head);
+		*head = tmp;
+		if (tmp != NULL)
+		{
+			tmp->prev = NULL;
+		}
+	}
+	else /* Deleting a node other than the first one */
+	{
+		(*head)->prev->next = (*head)->next;
 
-	/* Special case: deleting the first node*/
-	if (index == 0)
-	{
-		*head = current->next;  /* Update head to next node*/
-		if (*head != NULL)
-			(*head)->prev = NULL;  /* Update previous pointer of new head*/
-		free(current);  /* Free memory of the deleted node*/
+		if ((*head)->next != NULL)
+			(*head)->next->prev = (*head)->prev;
+
+		free(*head);
+		*head = saved_head;
 	}
-	else  /* Deleting a node other than the first one*/
-	{
-		if (current->prev != NULL)  /* Ensure previous node exists*/
-			current->prev->next = current->next;
-			/* Update next pointer of previous node*/
-		if (current->next != NULL)  /*Ensure next node exists*/
-			current->next->prev = current->prev;
-			/* Update previous pointer of next node*/
-		free(current);  /* Free memory of the deleted node */
-	}
-	return (1);  /* Deletion successful */
+	return (1); /* Successful deletion */
 }
